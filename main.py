@@ -7,12 +7,14 @@ import argparse
 import sys
 import json
 from parser import LogParser
+from analyzer import LogAnalyzer
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze log files')
     parser.add_argument('file', help='Log file to analyze')
     parser.add_argument('-o', '--output', help='Output format (json, csv, html)', default='json')
     parser.add_argument('-t', '--type', help='Log format type (apache, generic)', default='apache')
+    parser.add_argument('-s', '--stats', action='store_true', help='Show statistics instead of raw data')
     
     args = parser.parse_args()
     
@@ -33,10 +35,18 @@ def main():
                     
         print(f"Processed {len(results)} log entries")
         
-        if args.output == 'json':
-            print(json.dumps(results, indent=2))
+        if args.stats:
+            analyzer = LogAnalyzer()
+            stats = analyzer.analyze_entries(results)
+            if args.output == 'json':
+                print(json.dumps(stats, indent=2))
+            else:
+                print("Other output formats not implemented yet")
         else:
-            print("Other output formats not implemented yet")
+            if args.output == 'json':
+                print(json.dumps(results, indent=2))
+            else:
+                print("Other output formats not implemented yet")
             
     except FileNotFoundError:
         print(f"Error: File '{args.file}' not found")
