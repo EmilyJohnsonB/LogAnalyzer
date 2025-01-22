@@ -8,6 +8,7 @@ import sys
 import json
 from parser import LogParser
 from analyzer import LogAnalyzer
+from output import OutputFormatter
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze log files')
@@ -35,18 +36,23 @@ def main():
                     
         print(f"Processed {len(results)} log entries")
         
+        formatter = OutputFormatter()
+        
         if args.stats:
             analyzer = LogAnalyzer()
             stats = analyzer.analyze_entries(results)
-            if args.output == 'json':
-                print(json.dumps(stats, indent=2))
-            else:
-                print("Other output formats not implemented yet")
+            output_data = stats
         else:
-            if args.output == 'json':
-                print(json.dumps(results, indent=2))
-            else:
-                print("Other output formats not implemented yet")
+            output_data = results
+        
+        if args.output == 'json':
+            print(formatter.format_json(output_data))
+        elif args.output == 'csv':
+            print(formatter.format_csv(output_data))
+        elif args.output == 'html':
+            print(formatter.format_html(output_data))
+        else:
+            print(f"Unknown output format: {args.output}")
             
     except FileNotFoundError:
         print(f"Error: File '{args.file}' not found")
