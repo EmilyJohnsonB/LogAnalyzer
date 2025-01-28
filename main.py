@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description='Analyze log files')
     parser.add_argument('file', help='Log file to analyze')
     parser.add_argument('-o', '--output', help='Output format (json, csv, html)', default='json')
-    parser.add_argument('-t', '--type', help='Log format type (apache, generic)', default='apache')
+    parser.add_argument('-t', '--type', help='Log format type (apache, nginx, generic)', default='apache')
     parser.add_argument('-s', '--stats', action='store_true', help='Show statistics instead of raw data')
     
     args = parser.parse_args()
