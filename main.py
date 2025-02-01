@@ -6,9 +6,11 @@ LogAnalyzer - A simple log file analysis tool
 import argparse
 import sys
 import json
+from datetime import datetime
 from parser import LogParser
 from analyzer import LogAnalyzer
 from output import OutputFormatter
+from filters import LogFilter
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze log files')
@@ -16,6 +18,9 @@ def main():
     parser.add_argument('-o', '--output', help='Output format (json, csv, html)', default='json')
     parser.add_argument('-t', '--type', help='Log format type (apache, nginx, generic)', default='apache')
     parser.add_argument('-s', '--stats', action='store_true', help='Show statistics instead of raw data')
+    parser.add_argument('--start-date', help='Filter from date (YYYY-MM-DD)')
+    parser.add_argument('--end-date', help='Filter to date (YYYY-MM-DD)')
+    parser.add_argument('--status', help='Filter by status codes (comma-separated)', type=str)
     
     args = parser.parse_args()
     
@@ -34,7 +39,25 @@ def main():
                     parsed['line_number'] = line_num
                     results.append(parsed)
                     
-        print(f"Processed {len(results)} log entries")
+        # Apply filters
+        log_filter = LogFilter()
+        
+        # Date filtering
+        start_date = None
+        end_date = None
+        if args.start_date:
+            start_date = datetime.strptime(args.start_date, '%Y-%m-%d').date()
+        if args.end_date:
+            end_date = datetime.strptime(args.end_date, '%Y-%m-%d').date()
+            
+        results = log_filter.filter_by_date_range(results, start_date, end_date)
+        
+        # Status code filtering  
+        if args.status:
+            status_codes = [int(s.strip()) for s in args.status.split(',')]
+            results = log_filter.filter_by_status(results, status_codes)
+                    
+        print(f"Processed {len(results)} log entries (after filtering)")
         
         formatter = OutputFormatter()
         
