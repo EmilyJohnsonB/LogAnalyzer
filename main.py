@@ -11,6 +11,7 @@ from parser import LogParser
 from analyzer import LogAnalyzer
 from output import OutputFormatter
 from filters import LogFilter
+from utils import get_file_size_mb, suggest_batch_size
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze log files')
@@ -21,11 +22,18 @@ def main():
     parser.add_argument('--start-date', help='Filter from date (YYYY-MM-DD)')
     parser.add_argument('--end-date', help='Filter to date (YYYY-MM-DD)')
     parser.add_argument('--status', help='Filter by status codes (comma-separated)', type=str)
+    parser.add_argument('--batch-size', help='Process file in batches (for large files)', type=int, default=1000)
     
     args = parser.parse_args()
     
     log_parser = LogParser()
     results = []
+    
+    # Check file size and suggest batch size
+    file_size_mb = get_file_size_mb(args.file)
+    if file_size_mb > 1 and args.batch_size == 1000:
+        suggested = suggest_batch_size(file_size_mb)
+        print(f"File size: {file_size_mb:.1f}MB. Consider using --batch-size {suggested} for better performance.", file=sys.stderr)
     
     try:
         with open(args.file, 'r') as f:
@@ -38,6 +46,10 @@ def main():
                 if parsed:
                     parsed['line_number'] = line_num
                     results.append(parsed)
+                
+                # Progress indicator for large files
+                if line_num % args.batch_size == 0:
+                    print(f"Processing... {line_num} lines processed", file=sys.stderr)
                     
         # Apply filters
         log_filter = LogFilter()
