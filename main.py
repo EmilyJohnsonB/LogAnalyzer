@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
 LogAnalyzer - A simple log file analysis tool
+Version: 1.0.0
 """
+
+__version__ = "1.0.0"
 
 import argparse
 import sys
@@ -23,6 +26,7 @@ def main():
     parser.add_argument('--end-date', help='Filter to date (YYYY-MM-DD)')
     parser.add_argument('--status', help='Filter by status codes (comma-separated)', type=str)
     parser.add_argument('--batch-size', help='Process file in batches (for large files)', type=int, default=1000)
+    parser.add_argument('--version', action='version', version=f'LogAnalyzer {__version__}')
     
     args = parser.parse_args()
     
